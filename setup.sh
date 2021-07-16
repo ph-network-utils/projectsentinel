@@ -25,7 +25,8 @@ else
   echo Installing Docker, please wait...
   curl https://get.docker.com | /bin/sh
 fi
-  # Check for nginx
+
+# Check for nginx
 if $querypkg | grep nginx >/dev/null; then
   # Looks like nginx was found
   echo Found nginx
@@ -33,10 +34,11 @@ else
   $installpkg nginx
   systemctl enable --now nginx
 fi
-  echo Please enter your FQDN on which to publish the push server.
-  read server
-  echo Writing nginx conf
-  cat <<EOF >>/etc/nginx/sites-available/$server.conf
+
+ echo Please enter your FQDN on which to publish the push server.
+ read server
+ echo Writing nginx conf
+ cat <<EOF >>/etc/nginx/sites-available/$server.conf
   server {
 
   # Here goes your domain / subdomain
@@ -68,8 +70,8 @@ EOF
 
 ln -s /etc/nginx/sites-available/$server.conf /etc/nginx/sites-enabled/$server.conf
 echo Starting server
-docker run -p 12345:80 -v /opt/projectsentinel/data:/app/data gotify/server
-
+docker run -p 12345:80 --restart=always -v /opt/projectsentinel/data:/app/data gotify/server
+mkdir /opt/projectsentinel
 echo Grabbing service template
 
 if [[ -e /usr/bin/systemd ]]; then
@@ -91,5 +93,7 @@ elif [[ -d /lib/systemd/system ]]; then
     echo Installing and enabling service
     mv /tmp/systemctltemplate /lib/systemd/system/loginpush
     systemctl enable loginpush
-
 fi
+
+# Installation complete, now configuration
+
