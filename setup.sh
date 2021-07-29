@@ -6,6 +6,37 @@ if [[ $(id -u) -gt 0 ]]; then
   exit 1
 fi
 
+# Define our functions
+
+function buildmenu () {
+echo \#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#
+N=0
+for i in $(echo $response | tr "," "\n" | tr -d "\{\}\[\]\"" | grep id | cut -d ":" -f 2 | tr " " "\n" )
+do
+N=$(expr $N + 1)
+echo Option $N is: $i
+done
+echo \#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#
+}
+
+function getapptoken() {
+echo Your currently active applications are:
+curl -u $gotify_username:$gotify_password https://$gotify_server/application | jq
+read -p "Please enter your app token: " apptoken
+}
+getapptoken
+
+function testapptoken() {
+echo Apptoken set to $apptoken .
+echo Trying to send message using apptoken
+testresponse=$(curl -X POST https://$gotify_server/message?token=$apptoken -F "title=Testnotification" -F "message=If you're seeing this the app is correctly configured" -F "priority=8" >/dev/null)
+if echo $testresponse | grep "provide a valid access token"; then
+echo Invalid token set!
+getapptoken
+testapptoken
+fi
+}
+testapptoken
 
 
 if [[ -e /usr/bin/apt ]]; then
@@ -96,4 +127,3 @@ elif [[ -d /lib/systemd/system ]]; then
 fi
 
 # Installation complete, now configuration
-
