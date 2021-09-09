@@ -58,12 +58,19 @@ else
 fi
 
 # Check for nginx
-if $querypkg | grep nginx >/dev/null; then
+if $querypkg nginx >/dev/null; then
   # Looks like nginx was found
   echo Found nginx
 else
   $installpkg nginx
   systemctl enable --now nginx
+fi
+
+# Check for JSON parser
+if $querypkg jq ; then
+  echo Found JQ.
+else
+  $installpkg jq
 fi
 
  echo Please enter your FQDN on which to publish the push server.
@@ -127,3 +134,7 @@ elif [[ -d /lib/systemd/system ]]; then
 fi
 
 # Installation complete, now configuration
+# Setting admin password
+echo Setting admin password
+newadminpass=$(echo $RANDOM | md5sum | head -c 20; echo)
+curl -X POST "http://$server/current/user/password" -u admin:admin -H "accept: application/json" -H "Content-Type: application/json" -d "{ \"pass\": \"$newadminpass\"}"
