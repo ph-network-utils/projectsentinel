@@ -9,13 +9,14 @@ fi
 # Functions
 
 function buildmenu () {
-echo \#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#
-N=0
-for i in $(echo $response | tr "," "\n" | tr -d "\{\}\[\]\"" | grep id | cut -d ":" -f 2 | tr " " "\n" )
-do
-N=$(expr $N + 1)
-echo Option $N is: $i
-done
+	echo \#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#
+	N=0
+#	for i in $(echo $response | tr "," "\n" | tr -d "\{\}\[\]\"" | grep id | cut -d ":" -f 2 | tr " " "\n" )
+	for i in "$@"
+		do
+		N=$(expr $N + 1)
+		echo Option $N is: $i
+	done
 echo \#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#
 }
 
@@ -23,7 +24,7 @@ function mainmenu () {
   while true
   do
     buildmenu "Enable disk space monitor" "Enable SMART check" "Quit"
-    read -p "Enter your choice" choice
+    read -p "Enter your choice: " choice
     case $choice in
       1)
       diskspacemon ;;
@@ -32,11 +33,14 @@ function mainmenu () {
       3)
       exit 0 ;;
     esac
+	done
 }
 
 function diskspacemon() {
   # Check if smartctl is installed
   if ! dpkg --get-selections | grep smartmontools; then
   apt update;apt install -y smartmontools
-  
+ fi
 }
+
+mainmenu
