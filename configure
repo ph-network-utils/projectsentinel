@@ -11,7 +11,6 @@ fi
 function buildmenu () {
 	echo \#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#
 	N=0
-#	for i in $(echo $response | tr "," "\n" | tr -d "\{\}\[\]\"" | grep id | cut -d ":" -f 2 | tr " " "\n" )
 	for i in "$@"
 		do
 		N=$(expr $N + 1)
@@ -37,10 +36,20 @@ function mainmenu () {
 }
 
 function diskspacemon() {
-  # Check if smartctl is installed
-  if ! dpkg --get-selections | grep smartmontools; then
+ # Check if smartctl is installed
+ if ! dpkg --get-selections | grep smartmontools; then
   apt update;apt install -y smartmontools
  fi
+ function getdisk() {
+  lsblk
+  read -p "Which device would you like to monitor? Choose disk /dev/sdX" disk
+  if ! -e $disk then;
+   echo $disk doesn\'t seem to exist, choose again
+   getdisk
+  fi
+ }
+ buildmenu "Daily" "Once a week" "Once a month" "Once a year"
+ read -p
 }
 
 mainmenu
