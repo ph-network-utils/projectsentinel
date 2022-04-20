@@ -60,19 +60,6 @@ fi
 
 # Declare some variables
 
-# If I make everything a comment no one will see it, right?
-# Took me 5 hours to comment below out and move to a different approach.
-
-# appall=$(echo $response | tr "," "\n" | tr -d "\{\}\[\]\"")
-# appid=$(echo $response | tr "," "\n" | tr -d "\{\}\[\]\"" | grep id | cut -d ":" -f 2)
-# apptoken=$(echo $response | tr "," "\n" | tr -d "\{\}\[\]\"" | grep token | cut -d ":" -f 2)
-# appname=$(echo $response | tr "," "\n" | tr -d "\{\}\[\]\"" | grep name | cut -d ":" -f 2)
-# appdesc=$(echo $response | tr "," "\n" | tr -d "\{\}\[\]\"" | grep description | cut -d ":" -f 2)
-
-# Now let's make the output prettier, let's build a nice menu to choose from.
-
-
-
 function buildmenu () {
 echo \#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#
 N=0
@@ -106,18 +93,18 @@ testapptoken
 # Let's create a menu for our sevices
 
 function enablesshnotifications() {
-  echo Copying sendpush to /usr/bin
+  echo Writing sendpush file to /usr/bin/sendpush
   cp sendpush /usr/bin/sendpush
-  if [[ ! -d /opt/projectsentinel ]]; then
-    echo Project sentinel folder not found, creating it.
-    mkdir /opt/projectsentinel
-  fi
+  chmod +x /usr/bin/sendpush
+  echo Creating directory for Project Sentinel at /opt/projectsentinel
+  mkdir -p /opt/projectsentinel
+  echo Setting up listener
   cp accepted.sh /opt/projectsentinel/accepted.sh
   if [[ -e /usr/bin/systemd ]]; then
       wget https://pieterhouwen.info/zooi/servicetemplate.txt -O /tmp/servicetemplate
-      sed -i 's/dir=""/dir=\/opt\/projectsentinel/' /tmp/servicetemplate
-      sed -i 's/cmd=""/cmd=\/opt\/projectsentinel\/accepted.sh/' /tmp/servicetemplate
-      sed -i 's/user=""/user=root/' /tmp/servicetemplate
+      sed -i 's/dir=""/dir="\/opt\/projectsentinel"' /tmp/servicetemplate
+      sed -i 's/cmd=""/cmd="\/opt\/projectsentinel\/accepted.sh"' /tmp/servicetemplate
+      sed -i 's/user=""/user="root"' /tmp/servicetemplate
       echo Installing and enabling service
       mv /tmp/servicetemplate /etc/init.d/loginpush
       chmod +x /etc/init.d/loginpush

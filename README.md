@@ -19,7 +19,7 @@ Depending on the prospected usage this can be as small a machine as you'd like.
 Basically anything, this project has been tested on Arch Linux but should be compatible with Ubuntu also.
 
 # TODO
-* Learn how to use arrays
+* Option to end session from app notification. We already have the user and IP so this shouldn't be too hard.
 * Enable option to change port in gotify server selection.
 * Standardize for Docker images
 * SMART support?

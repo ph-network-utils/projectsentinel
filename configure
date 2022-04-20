@@ -1,0 +1,55 @@
+#!/bin/bash
+
+# Check privileges
+if [[ $(id -u) -gt 0 ]]; then
+  echo Please run as root!
+  exit 1
+fi
+
+# Functions
+
+function buildmenu () {
+	echo \#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#
+	N=0
+	for i in "$@"
+		do
+		N=$(expr $N + 1)
+		echo Option $N is: $i
+	done
+echo \#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#
+}
+
+function mainmenu () {
+  while true
+  do
+    buildmenu "Enable disk space monitor" "Enable SMART check" "Quit"
+    read -p "Enter your choice: " choice
+    case $choice in
+      1)
+      diskspacemon ;;
+      2)
+      smartcheck ;;
+      3)
+      exit 0 ;;
+    esac
+	done
+}
+
+function diskspacemon() {
+ # Check if smartctl is installed
+ if ! dpkg --get-selections | grep smartmontools; then
+  apt update;apt install -y smartmontools
+ fi
+ function getdisk() {
+  lsblk
+  read -p "Which device would you like to monitor? Choose disk /dev/sdX" disk
+  if ! -e $disk then;
+   echo $disk doesn\'t seem to exist, choose again
+   getdisk
+  fi
+ }
+ buildmenu "Daily" "Once a week" "Once a month" "Once a year"
+ read -p
+}
+
+mainmenu

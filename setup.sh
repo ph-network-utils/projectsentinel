@@ -6,6 +6,37 @@ if [[ $(id -u) -gt 0 ]]; then
   exit 1
 fi
 
+# Define our functions
+
+function buildmenu () {
+echo \#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#
+N=0
+for i in $(echo $response | tr "," "\n" | tr -d "\{\}\[\]\"" | grep id | cut -d ":" -f 2 | tr " " "\n" )
+do
+N=$(expr $N + 1)
+echo Option $N is: $i
+done
+echo \#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#
+}
+
+function getapptoken() {
+echo Your currently active applications are:
+curl -u $gotify_username:$gotify_password https://$gotify_server/application | jq
+read -p "Please enter your app token: " apptoken
+}
+getapptoken
+
+function testapptoken() {
+echo Apptoken set to $apptoken .
+echo Trying to send message using apptoken
+testresponse=$(curl -X POST https://$gotify_server/message?token=$apptoken -F "title=Testnotification" -F "message=If you're seeing this the app is correctly configured" -F "priority=8" >/dev/null)
+if echo $testresponse | grep "provide a valid access token"; then
+echo Invalid token set!
+getapptoken
+testapptoken
+fi
+}
+testapptoken
 
 
 if [[ -e /usr/bin/apt ]]; then
@@ -25,18 +56,27 @@ else
   echo Installing Docker, please wait...
   curl https://get.docker.com | /bin/sh
 fi
-  # Check for nginx
-if $querypkg | grep nginx >/dev/null; then
+
+# Check for nginx
+if $querypkg nginx >/dev/null; then
   # Looks like nginx was found
   echo Found nginx
 else
   $installpkg nginx
   systemctl enable --now nginx
 fi
-  echo Please enter your FQDN on which to publish the push server.
-  read server
-  echo Writing nginx conf
-  cat <<EOF >>/etc/nginx/sites-available/$server.conf
+
+# Check for JSON parser
+if $querypkg jq ; then
+  echo Found JQ.
+else
+  $installpkg jq
+fi
+
+ echo Please enter your FQDN on which to publish the push server.
+ read server
+ echo Writing nginx conf
+ cat <<EOF >>/etc/nginx/sites-available/$server.conf
   server {
 
   # Here goes your domain / subdomain
@@ -68,8 +108,8 @@ EOF
 
 ln -s /etc/nginx/sites-available/$server.conf /etc/nginx/sites-enabled/$server.conf
 echo Starting server
-docker run -p 12345:80 -v /opt/projectsentinel/data:/app/data gotify/server
-
+docker run -p 12345:80 --restart=always -v /opt/projectsentinel/data:/app/data gotify/server
+mkdir /opt/projectsentinel
 echo Grabbing service template
 
 if [[ -e /usr/bin/systemd ]]; then
@@ -91,5 +131,10 @@ elif [[ -d /lib/systemd/system ]]; then
     echo Installing and enabling service
     mv /tmp/systemctltemplate /lib/systemd/system/loginpush
     systemctl enable loginpush
-
 fi
+
+# Installation complete, now configuration
+# Setting admin password
+echo Setting admin password
+newadminpass=$(echo $RANDOM | md5sum | head -c 20; echo)
+curl -X POST "http://$server/current/user/password" -u admin:admin -H "accept: application/json" -H "Content-Type: application/json" -d "{ \"pass\": \"$newadminpass\"}"
