@@ -56,6 +56,8 @@ elif echo $response | grep "Could not resolve host" >/dev/null; then
   exit 1
 else
   echo Login succesful
+  echo Writing FQDN to textfile
+  echo $gotify_server >/opt/projectsentinel/gotify-fqdn.txt
 fi
 
 # Declare some variables
@@ -82,11 +84,13 @@ function testapptoken() {
 echo Apptoken set to $apptoken .
 echo Trying to send message using apptoken
 testresponse=$(curl -X POST https://$gotify_server/message?token=$apptoken -F "title=Testnotification" -F "message=If you're seeing this the app is correctly configured" -F "priority=8" >/dev/null)
-if echo $testresponse | grep "provide a valid access token"; then
+if echo $testresponse | grep -i "provide a valid access token"; then
 echo Invalid token set!
 getapptoken
 testapptoken
 fi
+echo Writing app token to textfile
+echo $apptoken >/opt/projectsentinel/gotify-apptoken.txt
 }
 testapptoken
 

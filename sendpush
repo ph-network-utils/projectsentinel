@@ -7,6 +7,15 @@ echo Sends a push notification to phone.
 exit 1
 }
 
+if [[ -e /opt/projectsentinel/gotify-fqdn.txt ]]; then
+fqdn=$(cat /opt/projectsentinel/gotify-fqdn.txt)
+fi
+
+if [[ -e /opt/projectsentinel/gotify-apptoken.txt ]]; then
+AppToken=$(cat /opt/projectsentinel/gotify-apptoken.txt)
+fi
+
+
 function sendmsg() {
 case $1 in
 login)
@@ -22,11 +31,12 @@ login)
    esac
   # Set the priority to make it appear on lockscreen
   # Priority "anything higher than 7"\ is highest
-  curl -X POST "https://push.domain.tld/message?token=<apptoken>" -F "title=Login notificaiton" -F "message=Login detected for user $user at IP $ipadr" -F "priority=7"
+  curl -X POST "https://${fqdn}/message?token=${AppToken}" -F "title=Login notificaiton" -F "message=Login detected for user $user at IP $ipadr" -F "priority=7"
   ;;
   smart)
   drive=$1
-  curl -X POST "https://push.domain.tld/message?token=<apptoken>" -F "title=SMART notification" -F "message=Drive $drive returned not PASSED, investigate." -F "priority=7"
+  curl -X POST "https://${fqdn}/message?token=${AppToken}" -F "title=SMART notification" -F "message=Drive $drive returned not PASSED, investigate." -F "priority=7"
+ ;;
  *)
  echo Invalid args!
  RTFM
