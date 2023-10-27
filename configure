@@ -35,6 +35,12 @@ function mainmenu () {
 	done
 }
 
+function writecronjob(interval) {
+ if $1 == "daily"; then
+ echo "diskspacemon
+ fi
+}
+
 function diskspacemon() {
  # Check if smartctl is installed
  if ! dpkg --get-selections | grep smartmontools; then
@@ -49,7 +55,9 @@ function diskspacemon() {
   fi
  }
  buildmenu "Daily" "Once a week" "Once a month" "Once a year"
- read -p
+ read -p "Select your choice: " interval
+ if $interval == "1"; then
+  writecronjobdaily
 }
 
 mainmenu
