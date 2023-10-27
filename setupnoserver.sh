@@ -113,7 +113,21 @@ function enablesshnotifications() {
       echo If all was well the daemon should be active and started at boot.
 
   elif [[ -d /lib/systemd/system ]]; then
-      wget https://pieterhouwen.info/zooi/systemctltemplate.txt -O /tmp/systemctltemplate
+      cat<<EOF > /tmp/systemctltemplate
+[Unit]
+Description=desk
+After=network.target
+
+[Service]
+ExecStart=command
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
       sed -i 's/command/\/opt\/projectsentinel\/accepted.sh/' /tmp/systemctltemplate
       sed -i 's/desk/Sends push notifications to phone/' /tmp/systemctltemplate
       echo Installing and enabling service
