@@ -131,7 +131,7 @@ EOF
       sed -i 's/command/\/opt\/projectsentinel\/accepted.sh/' /tmp/systemctltemplate
       sed -i 's/desk/Sends push notifications to phone/' /tmp/systemctltemplate
       echo Installing and enabling service
-      mv /tmp/systemctltemplate /lib/systemd/system/loginpush
+      mv /tmp/systemctltemplate /lib/systemd/system/loginpush.service
       systemctl enable --now loginpush
   fi
 }
